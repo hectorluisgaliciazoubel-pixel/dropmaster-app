@@ -139,6 +139,21 @@ const ChartComponent = ({ data, period }) => {
 
             return (
               <div key={idx} className="flex-1 flex flex-col items-center h-full relative group">
+                <div className="absolute bottom-full mb-1 hidden group-hover:block bg-slate-800 text-white text-[11px] p-3 rounded-lg z-20 whitespace-nowrap shadow-xl border border-slate-700 min-w-[120px]">
+                  <div className="font-bold border-b border-slate-600 pb-2 mb-2 text-center text-indigo-200">{item.label}</div>
+                  <div className="space-y-1">
+                    <div className="flex justify-between gap-4 text-slate-300">
+                        <span>Receita:</span> <span className="font-medium text-white">R$ {item.revenue.toFixed(2)}</span>
+                    </div>
+                    <div className={`flex justify-between gap-4 font-bold ${item.profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                        <span>Lucro:</span> <span className="font-bold">R$ {item.profit.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between gap-4 border-t border-slate-600 pt-1 mt-1">
+                        <span className="text-slate-400">Margem:</span> <span className={`font-bold ${parseFloat(marginPercent) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{marginPercent}%</span>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="w-full h-full relative mx-auto max-w-[40px] flex justify-center">
                   <div 
                     className="absolute w-1 bg-blue-100 left-1/2 -translate-x-1/2 rounded-t-sm z-0"
@@ -586,7 +601,7 @@ const LoginScreen = ({ onLogin, onRegister, error }) => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4" style={{ colorScheme: 'light' }}>
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 w-full" style={{ colorScheme: 'light' }}>
       <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full border border-slate-100">
         <div className="text-center mb-8">
           <div className="bg-indigo-600 p-3 rounded-xl w-fit mx-auto mb-4">
@@ -667,13 +682,22 @@ export default function DropMasterCFO() {
   const [authError, setAuthError] = useState(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
 
-  // --- STYLE INJECTION FOR FORCED LIGHT INPUTS ---
+  // --- STYLE INJECTION FOR FORCED LIGHT INPUTS AND FULL WIDTH ---
   useEffect(() => {
     const style = document.createElement('style');
     style.innerHTML = `
       :root {
         color-scheme: light;
       }
+      
+      html, body, #root {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        background-color: #f8fafc; /* Force Slate-50 globally */
+      }
+
       /* Target text-like inputs specifically to avoid messing up ranges/checkboxes */
       input:not([type="range"]), select, textarea {
         background-color: #ffffff !important;
