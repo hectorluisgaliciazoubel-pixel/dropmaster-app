@@ -17,14 +17,22 @@ import {
   ArrowRight,
   ArrowLeft,
   Percent,
-  Cloud
+  Cloud,
+  Loader2,
+  AlertTriangle,
+  LogOut,
+  User,
+  Lock,
+  Mail
 } from 'lucide-react';
 
 // --- IMPORTAÇÕES FIREBASE ---
 import { initializeApp } from 'firebase/app';
 import { 
   getAuth, 
-  signInAnonymously, 
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
   onAuthStateChanged 
 } from 'firebase/auth';
 import { 
@@ -33,13 +41,13 @@ import {
   addDoc, 
   deleteDoc, 
   doc, 
-  onSnapshot,
-  query,
+  onSnapshot, 
+  query, 
   orderBy
 } from 'firebase/firestore';
 
 // ============================================================================
-// ÁREA DE CONFIGURAÇÃO - COLE SUAS CHAVES AQUI
+// ÁREA DE CONFIGURAÇÃO - SUAS CHAVES
 // ============================================================================
 
 const firebaseConfig = {
@@ -51,7 +59,7 @@ const firebaseConfig = {
   appId: "1:488471816156:web:5b0ada2e48c583318ed119"
 };
 
-// Nome do seu aplicativo no banco de dados (pode manter este)
+// Nome do seu aplicativo no banco de dados
 const appId = 'dropmaster-v1';
 
 // ============================================================================
@@ -202,6 +210,9 @@ const PrecificacaoTab = () => {
   let isViavel = divisor > 0;
   const markupSugerido = custoTotalUnitario > 0 ? precoSugerido / custoTotalUnitario : 0;
 
+  // ESTILO FORÇADO PARA TEMA CLARO - AGORA COM !important
+  const inputClass = "w-full mt-1 p-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 placeholder-slate-400";
+
   return (
     <div className="space-y-6 animate-fadeIn">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -213,40 +224,40 @@ const PrecificacaoTab = () => {
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="text-xs font-medium text-slate-500">Cotação Dólar</label>
-                <input type="number" value={inputs.cotacaoDolar} onChange={(e) => setInputs({...inputs, cotacaoDolar: parseFloat(e.target.value) || 0})} className="w-full mt-1 p-2 border rounded-lg" />
+                <input type="number" value={inputs.cotacaoDolar} onChange={(e) => setInputs({...inputs, cotacaoDolar: parseFloat(e.target.value) || 0})} className={inputClass} />
               </div>
               <div>
                 <label className="text-xs font-medium text-slate-500">Preço Forn. (USD)</label>
-                <input type="number" value={inputs.precoFornUSD} onChange={(e) => setInputs({...inputs, precoFornUSD: parseFloat(e.target.value) || 0})} className="w-full mt-1 p-2 border rounded-lg" />
+                <input type="number" value={inputs.precoFornUSD} onChange={(e) => setInputs({...inputs, precoFornUSD: parseFloat(e.target.value) || 0})} className={inputClass} />
               </div>
               <div>
                 <label className="text-xs font-medium text-slate-500">Frete (BRL)</label>
-                <input type="number" value={inputs.freteBRL} onChange={(e) => setInputs({...inputs, freteBRL: parseFloat(e.target.value) || 0})} className="w-full mt-1 p-2 border rounded-lg" />
+                <input type="number" value={inputs.freteBRL} onChange={(e) => setInputs({...inputs, freteBRL: parseFloat(e.target.value) || 0})} className={inputClass} />
               </div>
               <div>
                 <label className="text-xs font-medium text-slate-500">Venda (BRL)</label>
-                <input type="number" value={inputs.vendaBRL} onChange={(e) => setInputs({...inputs, vendaBRL: parseFloat(e.target.value) || 0})} className="w-full mt-1 p-2 border border-blue-200 bg-blue-50 text-blue-900 font-bold rounded-lg" />
+                <input type="number" value={inputs.vendaBRL} onChange={(e) => setInputs({...inputs, vendaBRL: parseFloat(e.target.value) || 0})} className={`${inputClass} border-blue-200 bg-blue-50 text-blue-900 font-bold`} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="text-xs font-medium text-slate-500">Impostos (%)</label>
                 <div className="relative">
-                    <input type="number" value={inputs.impostoRate} onChange={(e) => setInputs({...inputs, impostoRate: parseFloat(e.target.value) || 0})} className="w-full mt-1 p-2 border rounded-lg pl-8" />
+                    <input type="number" value={inputs.impostoRate} onChange={(e) => setInputs({...inputs, impostoRate: parseFloat(e.target.value) || 0})} className={`${inputClass} pl-8`} />
                     <Percent className="w-3 h-3 text-slate-400 absolute left-3 top-4" />
                 </div>
               </div>
               <div>
                 <label className="text-xs font-medium text-slate-500">Gateway + Taxas (%)</label>
                 <div className="relative">
-                    <input type="number" value={inputs.gatewayRate} onChange={(e) => setInputs({...inputs, gatewayRate: parseFloat(e.target.value) || 0})} className="w-full mt-1 p-2 border rounded-lg pl-8" />
+                    <input type="number" value={inputs.gatewayRate} onChange={(e) => setInputs({...inputs, gatewayRate: parseFloat(e.target.value) || 0})} className={`${inputClass} pl-8`} />
                     <Percent className="w-3 h-3 text-slate-400 absolute left-3 top-4" />
                 </div>
               </div>
             </div>
             <div className="mb-4">
               <label className="text-xs font-medium text-slate-500">CPA Projetado (Teste)</label>
-              <input type="number" value={inputs.cpaTeste} onChange={(e) => setInputs({...inputs, cpaTeste: parseFloat(e.target.value) || 0})} className="w-full mt-1 p-2 border rounded-lg" />
+              <input type="number" value={inputs.cpaTeste} onChange={(e) => setInputs({...inputs, cpaTeste: parseFloat(e.target.value) || 0})} className={inputClass} />
             </div>
             <div>
               <label className="text-xs font-medium text-slate-500 flex justify-between">
@@ -358,6 +369,9 @@ const FluxoDiarioTab = ({ transactions, addTransaction, deleteTransaction }) => 
 
   const recentTransactions = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date) || (b.createdAt?.toMillis && b.createdAt.toMillis() || 0) - (a.createdAt?.toMillis && a.createdAt.toMillis() || 0)).slice(0, 10);
 
+  // ESTILO FORÇADO E BLINDADO PARA TEMA CLARO
+  const inputClass = "w-full p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white text-slate-900 placeholder-slate-400 force-light-input";
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-fadeIn">
       <div className="lg:col-span-4">
@@ -365,14 +379,14 @@ const FluxoDiarioTab = ({ transactions, addTransaction, deleteTransaction }) => 
           <h3 className="font-bold text-slate-700 mb-1 flex items-center gap-2"><Calendar className="w-5 h-5 text-indigo-600" /> Lançar Dia</h3>
           <p className="text-xs text-slate-500 mb-6">Lance o que realmente aconteceu no financeiro hoje.</p>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div><label className="text-xs font-semibold text-slate-600 block mb-1">Data</label><input type="date" required value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} className="w-full p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" /></div>
+            <div><label className="text-xs font-semibold text-slate-600 block mb-1">Data</label><input type="date" required value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} className={inputClass} /></div>
             <div className="grid grid-cols-1 gap-4 pt-2">
-              <div><label className="text-xs font-semibold text-slate-600 block mb-1">Venda Bruta Yampi (Total)</label><input type="number" step="0.01" placeholder="0.00" value={formData.vendaBruta} onChange={e => setFormData({...formData, vendaBruta: e.target.value})} className="w-full p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" /></div>
-              <div><label className="text-xs font-semibold text-green-600 block mb-1">Repasse Líquido AppMax</label><input type="number" step="0.01" placeholder="0.00" value={formData.repasseLiquido} onChange={e => setFormData({...formData, repasseLiquido: e.target.value})} className="w-full p-2.5 border border-green-200 bg-green-50 rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-green-800 font-bold" /></div>
+              <div><label className="text-xs font-semibold text-slate-600 block mb-1">Venda Bruta Yampi (Total)</label><input type="number" step="0.01" placeholder="0.00" value={formData.vendaBruta} onChange={e => setFormData({...formData, vendaBruta: e.target.value})} className={inputClass} /></div>
+              <div><label className="text-xs font-semibold text-green-600 block mb-1">Repasse Líquido AppMax</label><input type="number" step="0.01" placeholder="0.00" value={formData.repasseLiquido} onChange={e => setFormData({...formData, repasseLiquido: e.target.value})} className={`${inputClass} border-green-200 bg-green-50 text-green-900 font-bold`} /></div>
             </div>
             <div className="grid grid-cols-2 gap-4 pt-2">
-               <div><label className="text-xs font-semibold text-red-500 block mb-1">Gasto Ads</label><input type="number" step="0.01" placeholder="0.00" value={formData.gastoAds} onChange={e => setFormData({...formData, gastoAds: e.target.value})} className="w-full p-2.5 border border-red-100 bg-red-50 rounded-lg focus:ring-2 focus:ring-red-500 outline-none text-red-800" /></div>
-               <div><label className="text-xs font-semibold text-red-500 block mb-1">Custo Produtos</label><input type="number" step="0.01" placeholder="0.00" value={formData.custoProdutos} onChange={e => setFormData({...formData, custoProdutos: e.target.value})} className="w-full p-2.5 border border-red-100 bg-red-50 rounded-lg focus:ring-2 focus:ring-red-500 outline-none text-red-800" /></div>
+               <div><label className="text-xs font-semibold text-red-500 block mb-1">Gasto Ads</label><input type="number" step="0.01" placeholder="0.00" value={formData.gastoAds} onChange={e => setFormData({...formData, gastoAds: e.target.value})} className={`${inputClass} border-red-100 bg-red-50 text-red-900`} /></div>
+               <div><label className="text-xs font-semibold text-red-500 block mb-1">Custo Produtos</label><input type="number" step="0.01" placeholder="0.00" value={formData.custoProdutos} onChange={e => setFormData({...formData, custoProdutos: e.target.value})} className={`${inputClass} border-red-100 bg-red-50 text-red-900`} /></div>
             </div>
             <button type="submit" className="w-full mt-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-colors"><Save className="w-4 h-4" /> Salvar Fechamento</button>
           </form>
@@ -505,6 +519,8 @@ const DRETab = ({ transactions, fixedCosts, addFixedCost, removeFixedCost }) => 
   const margemContribuicao = receitaLiquida + impostos + taxasYampi + custoProduto + marketing;
   const resultadoLiquido = margemContribuicao - appliedFixedCosts;
 
+  const inputClass = "input-filter font-bold text-slate-700 bg-white border-0 rounded";
+
   return (
     <div className="space-y-6 animate-fadeIn">
       <div className="flex flex-col md:flex-row justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-slate-100">
@@ -515,9 +531,9 @@ const DRETab = ({ transactions, fixedCosts, addFixedCost, removeFixedCost }) => 
         </div>
         <div className="flex items-center gap-2 mt-4 md:mt-0 bg-white border border-slate-200 rounded-lg p-1">
           <Calendar className="w-4 h-4 text-slate-400 ml-2" />
-          {periodo === 'diario' && <input type="date" value={dateFilter} onChange={e => setDateFilter(e.target.value)} className="input-filter font-bold text-slate-700" />}
-          {periodo === 'semanal' && <input type="week" value={dateFilter} onChange={e => setDateFilter(e.target.value)} className="input-filter" />}
-          {periodo === 'mensal' && <input type="month" value={dateFilter} onChange={e => setDateFilter(e.target.value)} className="input-filter" />}
+          {periodo === 'diario' && <input type="date" value={dateFilter} onChange={e => setDateFilter(e.target.value)} className={inputClass} />}
+          {periodo === 'semanal' && <input type="week" value={dateFilter} onChange={e => setDateFilter(e.target.value)} className={inputClass} />}
+          {periodo === 'mensal' && <input type="month" value={dateFilter} onChange={e => setDateFilter(e.target.value)} className={inputClass} />}
           {periodo === 'total' && <span className="text-sm font-bold text-slate-500 px-2">Histórico Completo</span>}
         </div>
       </div>
@@ -550,7 +566,7 @@ const DRETab = ({ transactions, fixedCosts, addFixedCost, removeFixedCost }) => 
             <h3 className="font-bold text-slate-700 mb-2 flex items-center gap-2"><TrendingUp className="w-5 h-5 text-orange-500" /> Custos Fixos Mensais</h3>
             <p className="text-xs text-slate-400 mb-4">Cadastre aqui o valor MENSAL cheio. O sistema divide automaticamente nas visões diárias e semanais.</p>
             <form onSubmit={(e) => { e.preventDefault(); const name = e.target.name.value; const amount = parseFloat(e.target.amount.value); if(name && amount) { addFixedCost(name, amount); e.target.reset(); } }} className="flex gap-2 mb-6">
-              <input name="name" placeholder="Nome" className="flex-1 p-2 border rounded-lg text-xs" required /><input name="amount" type="number" placeholder="R$" className="w-20 p-2 border rounded-lg text-xs" required />
+              <input name="name" placeholder="Nome" className="flex-1 p-2 border border-slate-200 rounded-lg text-xs bg-white text-slate-900" required /><input name="amount" type="number" placeholder="R$" className="w-20 p-2 border border-slate-200 rounded-lg text-xs bg-white text-slate-900" required />
               <button type="submit" className="bg-indigo-600 text-white p-2 rounded-lg hover:bg-indigo-700"><Plus className="w-4 h-4" /></button>
             </form>
             <div className="space-y-2">{fixedCosts.map(fc => (<div key={fc.id} className="flex justify-between items-center bg-slate-50 p-3 rounded-lg border border-slate-100"><span className="text-sm text-slate-700 font-medium">{fc.name}</span><div className="flex items-center gap-3"><span className="text-sm font-bold text-slate-600">R$ {fc.amount}</span><button onClick={() => removeFixedCost(fc.id)} className="text-slate-300 hover:text-red-500"><Trash2 className="w-3 h-3" /></button></div></div>))}</div>
@@ -565,24 +581,190 @@ const DRELine = ({ label, value }) => (
   <div className="flex justify-between text-sm text-slate-600 py-1"><span>{label}</span><span className={`${value < 0 ? 'text-red-500' : 'text-slate-700'}`}>{value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span></div>
 );
 
+// --- TELA DE LOGIN ---
+const LoginScreen = ({ onLogin, onRegister, error }) => {
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (isRegistering) {
+      onRegister(email, password);
+    } else {
+      onLogin(email, password);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4" style={{ colorScheme: 'light' }}>
+      <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full border border-slate-100">
+        <div className="text-center mb-8">
+          <div className="bg-indigo-600 p-3 rounded-xl w-fit mx-auto mb-4">
+            <TrendingUp className="w-8 h-8 text-white" />
+          </div>
+          <h1 className="text-2xl font-bold text-slate-900">DropMaster CFO</h1>
+          <p className="text-slate-500 text-sm mt-1">Gestão Financeira para E-commerce</p>
+        </div>
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-sm text-red-600">
+            <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+            <div className="relative">
+              <Mail className="w-5 h-5 text-slate-400 absolute left-3 top-2.5" />
+              <input 
+                type="email" 
+                required 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none bg-white text-slate-900 placeholder-slate-400 force-light-input"
+                placeholder="seu@email.com"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Senha</label>
+            <div className="relative">
+              <Lock className="w-5 h-5 text-slate-400 absolute left-3 top-2.5" />
+              <input 
+                type="password" 
+                required 
+                minLength={6}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none bg-white text-slate-900 placeholder-slate-400 force-light-input"
+                placeholder="******"
+              />
+            </div>
+          </div>
+
+          <button 
+            type="submit" 
+            className="w-full bg-indigo-600 text-white font-bold py-2.5 rounded-lg hover:bg-indigo-700 transition-colors shadow-sm"
+          >
+            {isRegistering ? 'Criar Conta' : 'Entrar'}
+          </button>
+        </form>
+
+        <div className="mt-6 text-center text-sm">
+          <span className="text-slate-500">
+            {isRegistering ? 'Já tem uma conta?' : 'Ainda não tem conta?'}
+          </span>
+          <button 
+            onClick={() => setIsRegistering(!isRegistering)}
+            className="ml-2 text-indigo-600 font-bold hover:text-indigo-800"
+          >
+            {isRegistering ? 'Fazer Login' : 'Criar Agora'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // --- APP PRINCIPAL ---
 export default function DropMasterCFO() {
   const [activeTab, setActiveTab] = useState('precificacao');
   const [transactions, setTransactions] = useState([]);
   const [fixedCosts, setFixedCosts] = useState([]);
   const [user, setUser] = useState(null);
+  const [authError, setAuthError] = useState(null);
+  const [loadingAuth, setLoadingAuth] = useState(true);
+
+  // --- STYLE INJECTION FOR FORCED LIGHT INPUTS ---
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.innerHTML = `
+      :root {
+        color-scheme: light;
+      }
+      /* Target text-like inputs specifically to avoid messing up ranges/checkboxes */
+      input:not([type="range"]), select, textarea {
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+        border-color: #cbd5e1 !important;
+        -webkit-text-fill-color: #0f172a !important;
+        -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important;
+        box-shadow: 0 0 0px 1000px #ffffff inset !important;
+      }
+      
+      /* Webkit autofill fix to ensure background stays white */
+      input:-webkit-autofill,
+      input:-webkit-autofill:hover, 
+      input:-webkit-autofill:focus, 
+      input:-webkit-autofill:active {
+        -webkit-box-shadow: 0 0 0 30px white inset !important;
+        -webkit-text-fill-color: #0f172a !important;
+      }
+
+      /* Ensure placeholders are visible */
+      ::placeholder {
+        color: #94a3b8 !important;
+        opacity: 1 !important;
+      }
+
+      /* Restore Range Slider Visibility */
+      input[type="range"] {
+        -webkit-appearance: none;
+        appearance: none;
+        background: transparent;
+        cursor: pointer;
+      }
+      
+      /* Slider Track */
+      input[type="range"]::-webkit-slider-runnable-track {
+        background: #e2e8f0; /* slate-200 */
+        height: 0.5rem;
+        border-radius: 0.5rem;
+      }
+      input[type="range"]::-moz-range-track {
+        background: #e2e8f0;
+        height: 0.5rem;
+        border-radius: 0.5rem;
+      }
+
+      /* Slider Thumb (Handle) */
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        margin-top: -6px; /* center thumb */
+        background-color: #22c55e; /* green-500 */
+        height: 1.25rem;
+        width: 1.25rem;
+        border-radius: 50%;
+      }
+      input[type="range"]::-moz-range-thumb {
+        border: none;
+        background-color: #22c55e;
+        height: 1.25rem;
+        width: 1.25rem;
+        border-radius: 50%;
+      }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
 
   useEffect(() => {
-    // Tenta autenticação anônima
-    const doLogin = async () => {
-        try {
-            await signInAnonymously(auth);
-        } catch (error) {
-            console.error("Erro no login anônimo", error);
-        }
-    };
-    doLogin();
-    const unsubscribe = onAuthStateChanged(auth, setUser);
+    // Escuta mudanças no estado de autenticação (login/logout)
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      // SE DETECTAR USUÁRIO ANÔNIMO (DA VERSÃO ANTERIOR), FAZ LOGOUT PARA FORÇAR LOGIN
+      if (currentUser && currentUser.isAnonymous) {
+        signOut(auth);
+      } else {
+        setUser(currentUser);
+        setLoadingAuth(false);
+      }
+    });
     return () => unsubscribe();
   }, []);
 
@@ -593,13 +775,77 @@ export default function DropMasterCFO() {
     return () => { unsubTrans(); unsubFixed(); };
   }, [user]);
 
-  const addTransaction = async (newTransArray) => { if(!user) return; for(const trans of newTransArray) { await addDoc(collection(db, 'artifacts', appId, 'users', user.uid, 'transactions'), { ...trans, createdAt: new Date() }); }};
+  const handleLogin = async (email, password) => {
+    try {
+      setAuthError(null);
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (error) {
+      console.error(error);
+      if (error.code === 'auth/invalid-credential') {
+        setAuthError('Email ou senha incorretos.');
+      } else {
+        setAuthError('Erro ao entrar. Verifique sua conexão.');
+      }
+    }
+  };
+
+  const handleRegister = async (email, password) => {
+    try {
+      setAuthError(null);
+      await createUserWithEmailAndPassword(auth, email, password);
+    } catch (error) {
+      console.error(error);
+      if (error.code === 'auth/email-already-in-use') {
+        setAuthError('Este email já está em uso.');
+      } else {
+        setAuthError('Erro ao criar conta. Tente novamente.');
+      }
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      setTransactions([]);
+      setFixedCosts([]);
+    } catch (error) {
+      console.error("Erro ao sair", error);
+    }
+  };
+
+  const addTransaction = async (newTransArray) => { 
+      if(!user) { alert("Erro: Você precisa estar logado."); return; }
+      try {
+        for(const trans of newTransArray) { await addDoc(collection(db, 'artifacts', appId, 'users', user.uid, 'transactions'), { ...trans, createdAt: new Date() }); }
+        alert("Salvo com sucesso!");
+      } catch(e) {
+          alert("Erro ao salvar: " + e.message);
+      }
+  };
   const deleteTransaction = async (id) => { if(!user) return; await deleteDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'transactions', id)); };
   const addFixedCost = async (name, amount) => { if(!user) return; await addDoc(collection(db, 'artifacts', appId, 'users', user.uid, 'fixedCosts'), { name, amount, createdAt: new Date() }); };
   const removeFixedCost = async (id) => { if(!user) return; await deleteDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'fixedCosts', id)); };
 
+  if (loadingAuth) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center" style={{ colorScheme: 'light' }}>
+        <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+      </div>
+    );
+  }
+
+  // Se não estiver logado, mostra tela de Login
+  if (!user) {
+    return (
+      <div style={{ colorScheme: 'light' }}>
+        <LoginScreen onLogin={handleLogin} onRegister={handleRegister} error={authError} />
+      </div>
+    );
+  }
+
+  // Se logado, mostra o App
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-800">
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-800" style={{ colorScheme: 'light' }}>
       <nav className="bg-white border-b border-slate-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between md:h-16 py-2 md:py-0 gap-3 md:gap-0">
@@ -608,8 +854,12 @@ export default function DropMasterCFO() {
                     <div className="bg-indigo-600 p-2 rounded-lg"><TrendingUp className="w-5 h-5 text-white" /></div>
                     <span className="text-xl font-bold text-slate-900">DropMaster <span className="text-indigo-600">CFO</span></span>
                 </div>
-                {/* Ícone de nuvem móvel */}
-                 <div className="md:hidden p-2 relative group"><Cloud className={`w-5 h-5 ${user ? 'text-green-500' : 'text-slate-400'}`} /></div>
+                {/* Ícone de nuvem/user móvel */}
+                 <div className="md:hidden flex items-center gap-2">
+                    <button onClick={handleLogout} className="p-2 text-slate-400 hover:text-red-500 transition-colors" title="Sair">
+                      <LogOut className="w-5 h-5" />
+                    </button>
+                 </div>
             </div>
             
             <div className="flex items-center gap-4 overflow-x-auto pb-1 md:pb-0 no-scrollbar">
@@ -618,13 +868,21 @@ export default function DropMasterCFO() {
                 <button onClick={() => setActiveTab('fluxo')} className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'fluxo' ? 'bg-white shadow text-indigo-600' : 'text-slate-500 hover:text-slate-900'}`}><div className="flex items-center gap-2"><Calendar className="w-4 h-4" /> Fluxo Diário</div></button>
                 <button onClick={() => setActiveTab('dre')} className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'dre' ? 'bg-white shadow text-indigo-600' : 'text-slate-500 hover:text-slate-900'}`}><div className="flex items-center gap-2"><BarChart3 className="w-4 h-4" /> DRE Gerencial</div></button>
               </div>
-              {/* Ícone de nuvem desktop */}
-              <div className="hidden md:block p-2 relative group"><Cloud className={`w-5 h-5 ${user ? 'text-green-500' : 'text-slate-400'}`} /></div>
+              {/* Info usuário Desktop */}
+              <div className="hidden md:flex items-center gap-3 pl-4 border-l border-slate-200">
+                  <div className="text-right hidden lg:block">
+                    <div className="text-xs text-slate-500">Logado como</div>
+                    <div className="text-xs font-bold text-slate-700 truncate max-w-[150px]">{user.email}</div>
+                  </div>
+                  <button onClick={handleLogout} className="p-2 bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 rounded-lg transition-colors" title="Sair">
+                      <LogOut className="w-4 h-4" />
+                  </button>
+              </div>
             </div>
           </div>
         </div>
       </nav>
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
         {activeTab === 'precificacao' && <PrecificacaoTab />}
         {activeTab === 'fluxo' && <FluxoDiarioTab transactions={transactions} addTransaction={addTransaction} deleteTransaction={deleteTransaction} />}
         {activeTab === 'dre' && <DRETab transactions={transactions} fixedCosts={fixedCosts} addFixedCost={addFixedCost} removeFixedCost={removeFixedCost} />}
