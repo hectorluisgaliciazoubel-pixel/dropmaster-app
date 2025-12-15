@@ -139,21 +139,6 @@ const ChartComponent = ({ data, period }) => {
 
             return (
               <div key={idx} className="flex-1 flex flex-col items-center h-full relative group">
-                <div className="absolute bottom-full mb-1 hidden group-hover:block bg-slate-800 text-white text-[11px] p-3 rounded-lg z-20 whitespace-nowrap shadow-xl border border-slate-700 min-w-[120px]">
-                  <div className="font-bold border-b border-slate-600 pb-2 mb-2 text-center text-indigo-200">{item.label}</div>
-                  <div className="space-y-1">
-                    <div className="flex justify-between gap-4 text-slate-300">
-                        <span>Receita:</span> <span className="font-medium text-white">R$ {item.revenue.toFixed(2)}</span>
-                    </div>
-                    <div className={`flex justify-between gap-4 font-bold ${item.profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                        <span>Lucro:</span> <span className="font-bold">R$ {item.profit.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between gap-4 border-t border-slate-600 pt-1 mt-1">
-                        <span className="text-slate-400">Margem:</span> <span className={`font-bold ${parseFloat(marginPercent) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{marginPercent}%</span>
-                    </div>
-                  </div>
-                </div>
-
                 <div className="w-full h-full relative mx-auto max-w-[40px] flex justify-center">
                   <div 
                     className="absolute w-1 bg-blue-100 left-1/2 -translate-x-1/2 rounded-t-sm z-0"
@@ -170,10 +155,11 @@ const ChartComponent = ({ data, period }) => {
           })}
         </div>
       </div>
-      <div className="flex gap-4 justify-center mt-8 text-xs text-slate-500">
+      {/* Legenda simplificada para mobile */}
+      <div className="flex flex-wrap gap-4 justify-center mt-8 text-xs text-slate-500">
         <div className="flex items-center gap-1"><div className="w-3 h-3 bg-emerald-500 rounded-sm"></div> Lucro</div>
         <div className="flex items-center gap-1"><div className="w-3 h-3 bg-red-500 rounded-sm"></div> Prejuízo</div>
-        <div className="flex items-center gap-1"><div className="w-1 h-3 bg-blue-100 rounded-sm"></div> Receita Bruta</div>
+        <div className="flex items-center gap-1"><div className="w-1 h-3 bg-blue-100 rounded-sm"></div> Receita</div>
       </div>
     </div>
   );
@@ -211,17 +197,18 @@ const PrecificacaoTab = () => {
   const markupSugerido = custoTotalUnitario > 0 ? precoSugerido / custoTotalUnitario : 0;
 
   // ESTILO FORÇADO PARA TEMA CLARO - AGORA COM !important
-  const inputClass = "w-full mt-1 p-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 placeholder-slate-400";
+  const inputClass = "w-full mt-1 p-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 placeholder-slate-400 force-light-input";
 
   return (
-    <div className="space-y-6 animate-fadeIn">
+    <div className="space-y-6 animate-fadeIn pb-20">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-4 space-y-4">
           <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
             <h3 className="font-bold text-slate-700 mb-4 flex items-center gap-2">
               <Settings className="w-4 h-4" /> Dados do Produto
             </h3>
-            <div className="grid grid-cols-2 gap-4 mb-4">
+            {/* CORREÇÃO: Usar 1 coluna no mobile (grid-cols-1) e 2 no PC (sm:grid-cols-2) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="text-xs font-medium text-slate-500">Cotação Dólar</label>
                 <input type="number" value={inputs.cotacaoDolar} onChange={(e) => setInputs({...inputs, cotacaoDolar: parseFloat(e.target.value) || 0})} className={inputClass} />
@@ -239,7 +226,8 @@ const PrecificacaoTab = () => {
                 <input type="number" value={inputs.vendaBRL} onChange={(e) => setInputs({...inputs, vendaBRL: parseFloat(e.target.value) || 0})} className={`${inputClass} border-blue-200 bg-blue-50 text-blue-900 font-bold`} />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4 mb-4">
+            {/* CORREÇÃO: 1 coluna no mobile */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="text-xs font-medium text-slate-500">Impostos (%)</label>
                 <div className="relative">
@@ -291,15 +279,15 @@ const PrecificacaoTab = () => {
               <div className="text-xs text-slate-500 mt-2">Margem: {margemAtual.toFixed(1)}%</div>
             </div>
           </div>
-          <div className="bg-gradient-to-r from-indigo-50 to-blue-50 p-6 rounded-xl border border-indigo-100 flex items-center justify-between">
-            <div className="flex gap-4">
+          <div className="bg-gradient-to-r from-indigo-50 to-blue-50 p-6 rounded-xl border border-indigo-100 flex items-center justify-between flex-wrap gap-4">
+            <div className="flex gap-4 items-center">
               <div className="bg-white p-3 rounded-full h-fit shadow-sm text-indigo-600"><Lightbulb className="w-6 h-6" /></div>
               <div>
                 <h4 className="font-bold text-indigo-900 text-lg">Sugestão de Preço</h4>
                 <p className="text-sm text-indigo-700 mt-1 max-w-md">Para manter seu CPA atual e lucrar <strong>{inputs.margemDesejada}%</strong>, você deveria vender por:</p>
               </div>
             </div>
-            <div className="text-right">
+            <div className="text-right w-full sm:w-auto">
               <div className="text-3xl font-bold text-indigo-600">{isViavel ? precoSugerido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : <span className="text-red-500 text-xl">Impossível</span>}</div>
               {isViavel && <div className="text-xs text-indigo-400 mt-1 font-medium">Markup Sugerido {markupSugerido.toFixed(2)}x</div>}
             </div>
@@ -373,18 +361,19 @@ const FluxoDiarioTab = ({ transactions, addTransaction, deleteTransaction }) => 
   const inputClass = "w-full p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white text-slate-900 placeholder-slate-400 force-light-input";
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-fadeIn">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-fadeIn pb-20">
       <div className="lg:col-span-4">
         <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6 sticky top-6">
           <h3 className="font-bold text-slate-700 mb-1 flex items-center gap-2"><Calendar className="w-5 h-5 text-indigo-600" /> Lançar Dia</h3>
           <p className="text-xs text-slate-500 mb-6">Lance o que realmente aconteceu no financeiro hoje.</p>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div><label className="text-xs font-semibold text-slate-600 block mb-1">Data</label><input type="date" required value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} className={inputClass} /></div>
-            <div className="grid grid-cols-1 gap-4 pt-2">
+            {/* CORREÇÃO: 1 coluna no mobile */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
               <div><label className="text-xs font-semibold text-slate-600 block mb-1">Venda Bruta Yampi (Total)</label><input type="number" step="0.01" placeholder="0.00" value={formData.vendaBruta} onChange={e => setFormData({...formData, vendaBruta: e.target.value})} className={inputClass} /></div>
               <div><label className="text-xs font-semibold text-green-600 block mb-1">Repasse Líquido AppMax</label><input type="number" step="0.01" placeholder="0.00" value={formData.repasseLiquido} onChange={e => setFormData({...formData, repasseLiquido: e.target.value})} className={`${inputClass} border-green-200 bg-green-50 text-green-900 font-bold`} /></div>
             </div>
-            <div className="grid grid-cols-2 gap-4 pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                <div><label className="text-xs font-semibold text-red-500 block mb-1">Gasto Ads</label><input type="number" step="0.01" placeholder="0.00" value={formData.gastoAds} onChange={e => setFormData({...formData, gastoAds: e.target.value})} className={`${inputClass} border-red-100 bg-red-50 text-red-900`} /></div>
                <div><label className="text-xs font-semibold text-red-500 block mb-1">Custo Produtos</label><input type="number" step="0.01" placeholder="0.00" value={formData.custoProdutos} onChange={e => setFormData({...formData, custoProdutos: e.target.value})} className={`${inputClass} border-red-100 bg-red-50 text-red-900`} /></div>
             </div>
@@ -522,22 +511,22 @@ const DRETab = ({ transactions, fixedCosts, addFixedCost, removeFixedCost }) => 
   const inputClass = "input-filter font-bold text-slate-700 bg-white border-0 rounded";
 
   return (
-    <div className="space-y-6 animate-fadeIn">
+    <div className="space-y-6 animate-fadeIn pb-20">
       <div className="flex flex-col md:flex-row justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-        <div className="flex bg-slate-100 p-1 rounded-lg">
+        <div className="flex bg-slate-100 p-1 rounded-lg w-full md:w-auto overflow-x-auto">
           {['Diário', 'Semanal', 'Mensal', 'Total'].map(p => (
             <button key={p} onClick={() => setPeriodo(p.toLowerCase())} className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${periodo === p.toLowerCase() ? 'bg-white shadow text-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}>{p}</button>
           ))}
         </div>
-        <div className="flex items-center gap-2 mt-4 md:mt-0 bg-white border border-slate-200 rounded-lg p-1">
-          <Calendar className="w-4 h-4 text-slate-400 ml-2" />
+        <div className="flex items-center gap-2 mt-4 md:mt-0 bg-white border border-slate-200 rounded-lg p-1 w-full md:w-auto">
+          <Calendar className="w-4 h-4 text-slate-400 ml-2 flex-shrink-0" />
           {periodo === 'diario' && <input type="date" value={dateFilter} onChange={e => setDateFilter(e.target.value)} className={inputClass} />}
           {periodo === 'semanal' && <input type="week" value={dateFilter} onChange={e => setDateFilter(e.target.value)} className={inputClass} />}
           {periodo === 'mensal' && <input type="month" value={dateFilter} onChange={e => setDateFilter(e.target.value)} className={inputClass} />}
-          {periodo === 'total' && <span className="text-sm font-bold text-slate-500 px-2">Histórico Completo</span>}
+          {periodo === 'total' && <span className="text-sm font-bold text-slate-500 px-2 whitespace-nowrap">Histórico Completo</span>}
         </div>
       </div>
-      <style>{`.input-filter { border: none; background: transparent; padding: 0.5rem; font-size: 0.875rem; color: #475569; outline: none; cursor: pointer; } .input-filter:focus { ring: 0; }`}</style>
+      <style>{`.input-filter { border: none; background: transparent; padding: 0.5rem; font-size: 0.875rem; color: #475569; outline: none; cursor: pointer; width: 100%; } .input-filter:focus { ring: 0; }`}</style>
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-8">
           <ChartComponent data={chartData} period={periodLabel} />
@@ -747,8 +736,24 @@ export default function DropMasterCFO() {
         width: 1.25rem;
         border-radius: 50%;
       }
+      
+      /* META VIEWPORT INJECTION */
+      @viewport {
+        width: device-width;
+        zoom: 1;
+      }
     `;
     document.head.appendChild(style);
+    
+    // Inject Meta Viewport tag dynamically if missing
+    let metaViewport = document.querySelector('meta[name="viewport"]');
+    if (!metaViewport) {
+        metaViewport = document.createElement('meta');
+        metaViewport.name = "viewport";
+        document.head.appendChild(metaViewport);
+    }
+    metaViewport.content = "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no";
+
     return () => {
       document.head.removeChild(style);
     };
