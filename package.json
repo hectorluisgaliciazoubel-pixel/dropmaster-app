@@ -1,0 +1,24 @@
+{
+  "name": "dropmaster-cfo",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Dashboard financeiro para dropshipping",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "firebase": "^10.12.0",
+    "lucide-react": "^0.390.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.66",
+    "@types/react-dom": "^18.2.22",
+    "@vitejs/plugin-react": "^4.2.1",
+    "vite": "^5.2.0"
+  }
+}
