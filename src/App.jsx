@@ -23,7 +23,8 @@ import {
   LogOut,
   User,
   Lock,
-  Mail
+  Mail,
+  KeyRound
 } from 'lucide-react';
 
 // --- IMPORTAÇÕES FIREBASE ---
@@ -32,6 +33,7 @@ import {
   getAuth, 
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
   signOut,
   onAuthStateChanged 
 } from 'firebase/auth';
@@ -586,7 +588,7 @@ const DRELine = ({ label, value }) => (
 );
 
 // --- TELA DE LOGIN ---
-const LoginScreen = ({ onLogin, onRegister, error }) => {
+const LoginScreen = ({ onLogin, onRegister, onResetPassword, error }) => {
   const [isRegistering, setIsRegistering] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -600,8 +602,16 @@ const LoginScreen = ({ onLogin, onRegister, error }) => {
     }
   };
 
+  const handleForgotPasswordClick = () => {
+    if (email) {
+      onResetPassword(email);
+    } else {
+      alert("Por favor, preencha o campo de e-mail para redefinir sua senha.");
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 w-full" style={{ colorScheme: 'light' }}>
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4" style={{ colorScheme: 'light' }}>
       <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full border border-slate-100">
         <div className="text-center mb-8">
           <div className="bg-indigo-600 p-3 rounded-xl w-fit mx-auto mb-4">
@@ -647,6 +657,16 @@ const LoginScreen = ({ onLogin, onRegister, error }) => {
                 placeholder="******"
               />
             </div>
+          </div>
+
+          <div className="flex justify-end">
+            <button 
+              type="button"
+              onClick={handleForgotPasswordClick}
+              className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+            >
+              Esqueci a senha
+            </button>
           </div>
 
           <button 
@@ -832,6 +852,21 @@ export default function DropMasterCFO() {
     }
   };
 
+  const handleResetPassword = async (email) => {
+    try {
+      setAuthError(null);
+      await sendPasswordResetEmail(auth, email);
+      alert('Email de redefinição enviado! Verifique sua caixa de entrada.');
+    } catch (error) {
+      console.error(error);
+      if (error.code === 'auth/user-not-found') {
+        setAuthError('Email não cadastrado.');
+      } else {
+        setAuthError('Erro ao enviar email de redefinição.');
+      }
+    }
+  };
+
   const handleLogout = async () => {
     try {
       await signOut(auth);
@@ -867,7 +902,12 @@ export default function DropMasterCFO() {
   if (!user) {
     return (
       <div style={{ colorScheme: 'light' }}>
-        <LoginScreen onLogin={handleLogin} onRegister={handleRegister} error={authError} />
+        <LoginScreen 
+          onLogin={handleLogin} 
+          onRegister={handleRegister} 
+          onResetPassword={handleResetPassword}
+          error={authError} 
+        />
       </div>
     );
   }
